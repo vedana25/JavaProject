@@ -701,7 +701,8 @@ public final class Table extends JFrame{
 		PlayerPanel(Player player){
 			super(new GridBagLayout());
 			this.player = player;
-
+			if(this.getPlayer()==Board.player1) setBackground(Color.decode("#AED6F1"));
+			else setBackground(Color.decode("#F5B7B1"));
 			setPreferredSize(PLAYER_PANEL_DIMENSION);
 			labeling(player);
 		}
@@ -715,6 +716,8 @@ public final class Table extends JFrame{
 				e.printStackTrace();
 			}
 			this.removeAll();
+			if(this.getPlayer()==Board.player1) setBackground(Color.decode("#AED6F1"));
+			else setBackground(Color.decode("#F5B7B1"));
             Image fitImage = image.getScaledInstance(30, 30, Image.SCALE_AREA_AVERAGING);
             JLabel name = new JLabel();
             JLabel blank = new JLabel();
