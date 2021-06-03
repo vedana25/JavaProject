@@ -8,7 +8,7 @@ public class Warrior extends gameObject{
 	public Warrior() {
 		setRange(1);
 		setAtktime(750);
-		setSkillname("Critical Strike");
+		setSkillname("Strike");
 		setSkilltime(3);
 	}
 

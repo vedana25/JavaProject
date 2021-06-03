@@ -95,7 +95,7 @@ public class gameObject extends JFrame implements Runnable  {
 		else {
 			target.setHealth(0);
 			Board.printOnlog(this,target,this.getAtk()); //print about it on the log
-			target = null;
+			
 
 		}
         SwingUtilities.invokeLater

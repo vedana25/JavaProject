@@ -9,11 +9,15 @@ import static javax.swing.SwingUtilities.isRightMouseButton;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -28,16 +32,14 @@ import board.BoardManager;
 import board.BoardUtils;
 import board.Player;
 import entity.gameObject;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
 
 public final class Table extends JFrame{
 
-    private static final Dimension OUTER_FRAME_DIMENSION = new Dimension(657, 640);
+    private static final Dimension OUTER_FRAME_DIMENSION = new Dimension(1202, 720);
     private static final Dimension BOARD_PANEL_DIMENSION = new Dimension(600,600);
     private static final Dimension STORAGE_PANEL_DIMENSION = new Dimension(20, 20);
     private static final Dimension TILE_PANEL_DIMENSION = new Dimension(20, 20);
+    
    
     private Board battleBoard;
     private final BoardPanel boardPanel;
@@ -72,6 +74,14 @@ public final class Table extends JFrame{
         center(this.gameFrame);
     	this.gameFrame.setVisible(true);
     	
+        Console console = null;
+		try {
+			console = new Console(gameFrame);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
         SwingUtilities.invokeLater
         (
              new Runnable()  {
@@ -91,7 +101,7 @@ public final class Table extends JFrame{
         final Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         final int w = frame.getSize().width;
         final int h = frame.getSize().height;
-        final int x = (dim.width - w) / 2;
+        final int x = ((dim.width - w) / 2);
         final int y = (dim.height - h) / 2;
         frame.setLocation(x, y);
     }
@@ -175,7 +185,8 @@ public final class Table extends JFrame{
         	else return lowerStorageTiles.get(i);
         }
 
-
+     
+        
     }
 	public class StoragePanel extends JPanel{
 		private final int storageId;
@@ -198,7 +209,18 @@ public final class Table extends JFrame{
         			if(player ==Board.player1) EntityObject = getGameBoard().getStorage1().get(storageId);
         			else EntityObject = getGameBoard().getStorage2().get(storageId);
                     if (isRightMouseButton(event)) {
-                        sourceObject = null;
+                        //not picking up
+                    	sourceObject = null;
+                        
+                    	//Remove lower-level champions
+        	            player.getStorage().numOfObjects.put(EntityObject.getName(),player.getStorage().numOfObjects.get(EntityObject.getName())-1);
+        	            player.getStorage().isTaken.remove(EntityObject.getCellNum());
+        	            player.getStorage().cell.remove(EntityObject.getCellNum());
+        	            
+       					//Remove from Storage
+       					panel.removeAll();
+       					panel.revalidate();
+       					panel.repaint();
                     } else if (isLeftMouseButton(event)) {
                     	sourceObject = EntityObject;
 
@@ -262,15 +284,35 @@ public final class Table extends JFrame{
         public void assignChampion(final Board board, final gameObject Entity) {
         	this.removeAll();
         	String p;
-        	if(Entity.getPlayer()==Board.player1) p = "p1";
+        	if(Entity.getPlayer()==getGameBoard().player1)  p= "p1";
         	else p = "p2";
-        	
-            try{
-                final BufferedImage image = ImageIO.read(new File("art/champions/"+ p + Entity.getName()+".png"));
-                add(new JLabel(new ImageIcon(image)));
-            } catch(final IOException e) {
-                e.printStackTrace();
-            }
+            BufferedImage image = null;
+			try {
+				image = ImageIO.read(new File("art/champions/"+ p + Entity.getName()+".png"));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+            Image fitImage = image.getScaledInstance(40, 30, Image.SCALE_AREA_AVERAGING);
+            JLabel name = new JLabel(Entity.getName());
+            JLabel icon = new JLabel(new ImageIcon(fitImage));
+            name.setFont(new Font("Verdana", Font.BOLD, 8));
+            name.setForeground(Color.WHITE);
+        	GridBagConstraints gbc = new GridBagConstraints();
+        	gbc.fill = GridBagConstraints.BOTH;
+
+            gbc.gridx=0;  
+            gbc.gridy=0;
+            gbc.gridwidth = 3;
+            gbc.gridheight = 1;
+            add(name, gbc);
+            gbc.gridx=0;  
+            gbc.gridy=1;
+            gbc.gridwidth = 3;
+            gbc.gridheight = 5;
+            add(icon, gbc);
+            
         	this.revalidate();
         	this.repaint();
             SwingUtilities.invokeLater
@@ -437,7 +479,7 @@ public final class Table extends JFrame{
             JLabel hp = new JLabel();
             JLabel blank = new JLabel(" ");
             hp.setText("HP: "+Entity.getHealth());
-            skill.setFont(new Font("Verdana", Font.BOLD, 7));
+            skill.setFont(new Font("Verdana", Font.BOLD, 9));
             
             if(Entity.getSkillActive()==true) {
             	skill.setText(Entity.getSkillname());
@@ -451,9 +493,8 @@ public final class Table extends JFrame{
             	this.setBorder(null);
             }
             
-            hp.setFont(new Font("Verdana", Font.BOLD, 7));
-            blank.setFont(new Font("Verdana", Font.BOLD, 7));
-            //damageColor(hp);
+            hp.setFont(new Font("Verdana", Font.BOLD, 8));
+            blank.setFont(new Font("Verdana", Font.BOLD, 4));
             
             gbc.gridx=0;  
             gbc.gridy=0;
@@ -461,17 +502,17 @@ public final class Table extends JFrame{
             gbc.gridheight = 2;
             add(skill, gbc);
             gbc.gridx=0;  
-            gbc.gridy=2;
+            gbc.gridy=3;
             gbc.gridwidth = 3;
             gbc.gridheight = 4;
             add(icon, gbc);
             gbc.gridx=0;  
-            gbc.gridy=6;
+            gbc.gridy=8;
             gbc.gridwidth = 3;
             gbc.gridheight = 2;
             add(hp, gbc);
             gbc.gridx=0;
-            gbc.gridy=10;
+            gbc.gridy=11;
             gbc.gridwidth=3;
             gbc.gridheight=1;
             add(blank, gbc);
@@ -538,16 +579,16 @@ public final class Table extends JFrame{
             		this.removeAll();
             	}
         	
-        	if(damaged==0) {g.fillRect(0, 43, 60, 3);}
-        	else if(damaged==1) {g.fillRect(0,43,54,3);}
-        	else if(damaged==2) {g.fillRect(0, 43, 48, 3);}
-        	else if(damaged==3) {g.setColor(Color.decode("#CD6155"));g.fillRect(0, 43, 42, 3);}
-        	else if(damaged==4) {g.setColor(Color.decode("#CD6155"));g.fillRect(0, 43, 36, 3);}
-        	else if(damaged==5) {g.setColor(Color.decode("#A93226"));g.fillRect(0, 43, 30, 3);}
-        	else if(damaged==6) {g.setColor(Color.decode("#A93226"));g.fillRect(0, 43, 24, 3);}
-        	else if(damaged==7) {g.setColor(Color.decode("#A93226"));g.fillRect(0, 43, 18, 3);}
-        	else if(damaged==8) {g.setColor(Color.decode("#641E16"));g.fillRect(0, 43, 12, 3);}
-        	else if(damaged==9) {g.setColor(Color.decode("#641E16"));g.fillRect(0, 43, 6, 3);}
+        	if(damaged==0) {g.fillRect(0, 51, 63, 3);}
+        	else if(damaged==1) {g.fillRect(0,51,58,3);}
+        	else if(damaged==2) {g.fillRect(0, 51, 48, 3);}
+        	else if(damaged==3) {g.setColor(Color.decode("#CD6155"));g.fillRect(0, 51, 42, 3);}
+        	else if(damaged==4) {g.setColor(Color.decode("#CD6155"));g.fillRect(0, 51, 36, 3);}
+        	else if(damaged==5) {g.setColor(Color.decode("#A93226"));g.fillRect(0, 51, 30, 3);}
+        	else if(damaged==6) {g.setColor(Color.decode("#A93226"));g.fillRect(0, 51, 24, 3);}
+        	else if(damaged==7) {g.setColor(Color.decode("#A93226"));g.fillRect(0, 51, 18, 3);}
+        	else if(damaged==8) {g.setColor(Color.decode("#641E16"));g.fillRect(0, 51, 12, 3);}
+        	else if(damaged==9) {g.setColor(Color.decode("#641E16"));g.fillRect(0, 51, 6, 3);}
         	}
           }
     }
@@ -575,6 +616,45 @@ public final class Table extends JFrame{
     	return this.StoragePanel;
     }
     
+}
 
+class Console {
+
+    JTextArea textArea;
+    private static final Dimension LOG_FRAME_DIMENSION = new Dimension(30, 100);
     
+    public Console(JFrame frame) throws Exception {
+   	
+        textArea = new JTextArea(35, 80);
+        textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
+        textArea.setEditable(false);
+        textArea.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        scrollPane.setSize(LOG_FRAME_DIMENSION);
+        frame.add(scrollPane, BorderLayout.EAST);
+        scrollPane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {  
+            public void adjustmentValueChanged(AdjustmentEvent e) {  
+                e.getAdjustable().setValue(e.getAdjustable().getMaximum());  
+            }
+        });
+        redirectOut();
+
+    }
+
+    public PrintStream redirectOut() {
+        OutputStream out = new OutputStream() {
+            @Override
+            public void write(int b) throws IOException {
+                textArea.append(String.valueOf((char) b));
+            }
+        };
+        PrintStream ps = new PrintStream(out);
+        
+        System.setOut(ps);
+        System.setErr(ps);
+
+        return ps;
+    }
+
 }

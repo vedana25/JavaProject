@@ -34,8 +34,9 @@ public class Battle extends Thread{
 		
 		
 		while(true) {
-			if(game.player1.getnumOfobj()==0||game.player2.getnumOfobj()==0) {
-				if(game.player1.getnumOfobj()==0) whoWin=2;
+			if(Board.player1.getnumOfobj()==0||Board.player2.getnumOfobj()==0) {
+				if(Board.player1.getnumOfobj()==0 && (Board.player2.getnumOfobj()==0)) whoWin=3;
+				else if (Board.player1.getnumOfobj()==0) whoWin=2;
 				else whoWin=1;
 				isFinished=true;
 				break; // end if all objects of any side are dead

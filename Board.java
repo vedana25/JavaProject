@@ -31,10 +31,13 @@ public class Board {
 	
 	HashMap<Integer, gameObject> EntityMap;
 	
+	private static int finished=0;
+
 	public Board() {
 		this.initialize();	
 	}
-	
+	//this is to test
+	System.out.println("test");
 	//write a line about an attack on the log
 	public static void printOnlog(gameObject attacker, gameObject target, int damage) {
 		if(target.getHealth()<=0) {
@@ -55,15 +58,14 @@ public class Board {
 			System.out.println(colorName(attacker)+" dealt "+damage+" damages to "+colorName(target)+"(Hp: "+ target.getHealth()+")"+" with: "+attacker.getSkillname());
 		}
 		else System.out.println(colorName(attacker)+" healed "+-damage+" HP to "+colorName(target)+"(Hp: "+ target.getHealth()+")"+" with: "+attacker.getSkillname());
-	}	
-	
+	}		
 	public static String colorName(gameObject object) {
 		String nameWithColor;
 		if(object.getPlayer()==player1) {
 			nameWithColor=BLUE+object.getName()+RESET;
 		}
 		else nameWithColor=RED+object.getName()+RESET;
-		return object.getName();
+		return nameWithColor;
 	}
 	
 	public int getRound() {
@@ -77,11 +79,13 @@ public class Board {
 	public Storage getStorage2() {
 		return this.storage2;
 	}
-
+	public void setFinish(int isfinish) {
+		finished=isfinish;
+	}
 	
 	//Print ROUND # and Score
 	public void printScore() {
-		System.out.println("ROUND "+round);
+		int presentRound = round+1;
 		System.out.println("SCORE "+player1.getNumOfWin()+" : "+player2.getNumOfWin());
 		System.out.println("Player1 HP: " + player1.getHp());
 		System.out.println("Player2 HP: " + player2.getHp());
@@ -90,7 +94,8 @@ public class Board {
 	//GUI Version Print ROUND # and Score
 	public String popupScore() {
 		String message;
-		message = "ROUND "+round+
+		int presentRound = round;
+		message = "ROUND "+presentRound+
 		"\nSCORE "+player1.getNumOfWin()+" : "+player2.getNumOfWin() +
 		"\nPlayer1 HP: " + player1.getHp() +
 		"\nPlayer2 HP: " + player2.getHp();
@@ -100,64 +105,76 @@ public class Board {
 	//move all objects on the board to the storages after end of a round
 	public void clearBoard(Table gameTable) {
 		
-		Board.player1.setnumOfobj(0);
-		Board.player2.setnumOfobj(0);
+		player1.setnumOfobj(0);
+		player2.setnumOfobj(0);
 
 		for(int i=0;i<10;i++) {
 			for(int j=0;j<10;j++) {
 				gameTable.getBoardPanel().getTilePanel(10*i+j).removeAll();
 				gameTable.getBoardPanel().getTilePanel(10*i+j).setTileObject(null);
 				
+                SwingUtilities.invokeLater
+                (
+                     new Runnable()  {
+                          public void run()     {
+                        	  gameTable.getBoardPanel().drawBoard(gameTable.getGameBoard());			
+      						          					
+              		        }
+                      }
+                );
+				
 				if(BoardManager.ENTITIES_ONBOARD[i][j]!=null) {
 					gameObject e=BoardManager.ENTITIES_ONBOARD[i][j];
-					if(e.getPlayer()==Board.player1) {
-						gameTable.getBoardPanel().getStoragePanel(e.getPlayer(), e.getCellNum()).assignChampion(gameTable.getGameBoard(), e);
+					if(e.getPlayer()==gameTable.getGameBoard().player1) {
+						int cellNum = storage1.firstEmpty();
+						gameTable.getBoardPanel().getStoragePanel(e.getPlayer(), cellNum).assignChampion(gameTable.getGameBoard(), e);
+						e.setCellNum(cellNum);
 						e.setInstorage(true);	
-						storage1.isTaken.put(e.getCellNum(),true);
+						storage1.isTaken.put(cellNum,true);
 						BoardManager.ENTITIES_ONBOARD[i][j]=null;
 					}
 					else {
-						gameTable.getBoardPanel().getStoragePanel(e.getPlayer(), e.getCellNum()).assignChampion(gameTable.getGameBoard(), e);
+						int cellNum = storage2.firstEmpty();
+						gameTable.getBoardPanel().getStoragePanel(e.getPlayer(), cellNum).assignChampion(gameTable.getGameBoard(), e);
+						e.setCellNum(cellNum);
 						e.setInstorage(true);	
-						storage2.isTaken.put(e.getCellNum(),true);
+						storage2.isTaken.put(cellNum,true);
 						BoardManager.ENTITIES_ONBOARD[i][j]=null;
+
+
 					}
 					e.setInstorage(true);
-					e.setAlive(true);
 					e.setHealth(e.getMaxHealth());
 				}
 
 			}
 		}
-		
 	}
 	
 	
 	
 	//judge which player won the game
-	public boolean judge(Table gameTable) {
+	public boolean judge() {
 		if(player1.getHp()==0 || player2.getHp()==0) {
 			this.printScore();
 			if(player1.getHp()==0 && player2.getHp()==0) {
 				System.out.println("Final Result: Draw");
-				JOptionPane.showMessageDialog(null, "Final Result: Draw", "Final Winner", 0); System.exit(0);
+				JOptionPane.showMessageDialog(null, "Final Result: Draw", "Final Winner", 0);
 				return true;				
 			}
 			else if(player1.getHp()==0) {
 				System.out.println("Final Winner: Player2");
-				JOptionPane.showMessageDialog(null, "Final Winner: Player2", "Final Winner", 0); System.exit(0);
+				JOptionPane.showMessageDialog(null, "Final Winner: Player2", "Final Winner", 0);
 				return true;
 			}
 			else {
-				JOptionPane.showMessageDialog(null, "Final Winner: Player1", "Final Winner", 0); System.exit(0);
+				JOptionPane.showMessageDialog(null, "Final Winner: Player1", "Final Winner", 0);
 				return true;
 			}
 		}else {
 			round++;
-			printScore();
-			System.out.println("Continue?");
-			int willContinue = JOptionPane.showConfirmDialog(null, popupScore(),"Continue?", JOptionPane.INFORMATION_MESSAGE);
-			if(willContinue != 0) System.exit(0);
+			System.out.println("PREPARE FOR THE NEXT ROUND!");
+			JOptionPane.showMessageDialog(null, "PREPARE FOR THE NEXT ROUND!");
 			return false;
 		}
 	}
@@ -166,16 +183,16 @@ public class Board {
 	public void endRound(int whoWin, Table gameTable) {
 		
 		if(whoWin==1) {
-			player2.setHp(player2.getHp()-player1.getnumOfobj()*10);
+			player2.setHp(player2.getHp()-50);
 			player1.setNumOfWin(player1.getNumOfWin()+1);
-			JOptionPane.showMessageDialog(null, "Player1 Win!", round+"round Winner", JOptionPane.INFORMATION_MESSAGE);
+			JOptionPane.showMessageDialog(null, "Player1 Win!", round+"round Winner", 0);
 			System.out.println("Player1 Win!");
 			System.out.println("---------------------------------------------------------------------");
 		}
 		else if(whoWin==2) {
-			player1.setHp(player1.getHp()-player2.getnumOfobj()*10);
+			player1.setHp(player1.getHp()-50);
 			player2.setNumOfWin(player2.getNumOfWin()+1);		
-			JOptionPane.showMessageDialog(null, "Player2 Win!", round+"round Winner", JOptionPane.INFORMATION_MESSAGE);
+			JOptionPane.showMessageDialog(null, "Player2 Win!", round+"round Winner", 0);
 			System.out.println("Player2 Win!");
 			System.out.println("---------------------------------------------------------------------");
 		}
@@ -183,16 +200,17 @@ public class Board {
 			player1.setHp(player1.getHp()-50);
 			player2.setHp(player1.getHp()-50);
 			System.out.println("Draw!");
-			JOptionPane.showMessageDialog(null, "Draw!", round+"round Winner", JOptionPane.INFORMATION_MESSAGE);
+			JOptionPane.showMessageDialog(null, "Draw!", round+"round Winner", 0);
 			System.out.println("---------------------------------------------------------------------");	
 		}
 		
 		this.clearBoard(gameTable);
 		Table.p1movedObj=0;
 		Table.p2movedObj=0;
-
-		player1.setReady(false);
-		player2.setReady(false);
+		//Table.p1=0;
+		//Table.p2=1;
+		gameTable.getGameBoard().player1.setReady(false);
+		gameTable.getGameBoard().player2.setReady(false);
 
 	}
 	
