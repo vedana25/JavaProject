@@ -16,7 +16,8 @@ import java.util.*;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities; 
 public class Board {
-	
+	//test2
+	System.out.println("test2");
 	public static final String RESET = "\u001B[0m";
 	public static final String BLUE = "\u001B[34m";
 	public static final String RED = "\u001B[31m";
