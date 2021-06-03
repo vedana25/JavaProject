@@ -35,16 +35,19 @@ import entity.gameObject;
 
 public final class Table extends JFrame{
 
-    private static final Dimension OUTER_FRAME_DIMENSION = new Dimension(1202, 720);
+    private static final Dimension OUTER_FRAME_DIMENSION = new Dimension(1200, 720);
     private static final Dimension BOARD_PANEL_DIMENSION = new Dimension(600,600);
     private static final Dimension STORAGE_PANEL_DIMENSION = new Dimension(20, 20);
     private static final Dimension TILE_PANEL_DIMENSION = new Dimension(20, 20);
-    
+	private static final Dimension SCORE_PANEL_DIMENSION = new Dimension(510, 600);
+	private static final Dimension ROUND_PANEL_DIMENSION = new Dimension(300,50);
+	private static final Dimension PLAYER_PANEL_DIMENSION = new Dimension(150,50);
    
     private Board battleBoard;
     private final BoardPanel boardPanel;
+    private final ScorePanel scorePanel;
     private StoragePanel StoragePanel;
-
+    private PlayerPanel playerPanel;
     private RandomShop randomFrame1;
     private RandomShop randomFrame2;
     private gameObject sourceObject;
@@ -67,7 +70,9 @@ public final class Table extends JFrame{
 		this.gameFrame = new JFrame("Auto-chess Game");
 		this.gameFrame.setLayout(new BorderLayout());
 		this.boardPanel = new BoardPanel();
+		this.scorePanel = new ScorePanel();
         this.gameFrame.add(this.boardPanel, BorderLayout.CENTER);
+        this.gameFrame.add(this.scorePanel, BorderLayout.EAST);
         setDefaultLookAndFeelDecorated(true);
         this.gameFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         this.gameFrame.setSize(OUTER_FRAME_DIMENSION);
@@ -76,7 +81,7 @@ public final class Table extends JFrame{
     	
         Console console = null;
 		try {
-			console = new Console(gameFrame);
+			console = new Console(scorePanel);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -616,45 +621,144 @@ public final class Table extends JFrame{
     	return this.StoragePanel;
     }
     
+    
+	public final class ScorePanel extends JPanel{
+		
+		ScorePanel(){
+			super(new BorderLayout());
+			final RoundPanel roundPanel = new RoundPanel();
+			final PlayerPanel playerPanel1 = new PlayerPanel(Board.player1); 
+			final PlayerPanel playerPanel2 = new PlayerPanel(Board.player2); 
+	
+			add(roundPanel, BorderLayout.NORTH);
+			JPanel center = new JPanel();
+			add (center, BorderLayout.SOUTH);
+			
+			center.setLayout(new GridLayout(1,2));
+			center.add(playerPanel1);
+			center.add(playerPanel2);
+			setPreferredSize(SCORE_PANEL_DIMENSION);
+	        setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 10));
+	        setBackground(Color.decode("#273746"));
+	        validate();
+		}
+		
+	}
+	
+	public class RoundPanel extends JPanel{
+	
+		RoundPanel(){
+			super(new GridLayout(1,2));
+			setPreferredSize(ROUND_PANEL_DIMENSION);
+			JLabel roundLabel = new JLabel();
+			JLabel scoreLabel = new JLabel();
+			roundLabel.setText("ROUND "+ Board.round);
+			scoreLabel.setText(Board.player1.getNumOfWin()+" : " + Board.player2.getNumOfWin());
+			roundLabel.setFont(new Font("Verdana", Font.BOLD, 20));
+			scoreLabel.setFont(new Font("Verdana", Font.BOLD, 20));
+
+			add(roundLabel);
+			add(scoreLabel);
+			setBorder(BorderFactory.createEmptyBorder(0, 100, 0, 100));
+		}
+
+	}
+	
+	public class PlayerPanel extends JPanel{
+		PlayerPanel(Player player){
+			super(new GridBagLayout());
+			setPreferredSize(PLAYER_PANEL_DIMENSION);
+			labeling(player);
+		}
+		
+		public void labeling(Player player) {
+            BufferedImage image = null;
+			try {
+				image = ImageIO.read(new File("art/players/player.png"));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			this.removeAll();
+            Image fitImage = image.getScaledInstance(30, 30, Image.SCALE_AREA_AVERAGING);
+            JLabel name = new JLabel();
+            JLabel blank = new JLabel();
+            JLabel hp = new JLabel();
+            blank.setText(" ");
+            if(player==Board.player1) {
+            	name.setText("Player1   HP: "+player.getHp());
+
+            	setBorder(BorderFactory.createEmptyBorder(0,0,5,0));
+            	setBorder(BorderFactory.createMatteBorder(3, 0, 0, 0, Color.BLACK));
+            }
+            else {       
+            	name.setText("Player2   HP: "+player.getHp());
+
+            	setBorder(BorderFactory.createEmptyBorder(0,0,5,0));
+            	setBorder(BorderFactory.createMatteBorder(3, 3, 0, 0, Color.BLACK));
+
+            }
+            JLabel icon = new JLabel(new ImageIcon(fitImage));
+
+        	GridBagConstraints gbc = new GridBagConstraints();
+        	gbc.fill = GridBagConstraints.BOTH;
+            
+        	gbc.fill = GridBagConstraints.BOTH;
+            gbc.gridx=0;  
+            gbc.gridy=1;
+            gbc.gridwidth = 4;
+            gbc.gridheight = 4;
+            add(icon, gbc);
+            gbc.gridx=0;  
+            gbc.gridy=5;
+            gbc.gridwidth = 4;
+            gbc.gridheight = 2;
+            add(name, gbc);
+            revalidate();
+		}
+	}
+    
 }
 
-class Console {
 
-    JTextArea textArea;
-    private static final Dimension LOG_FRAME_DIMENSION = new Dimension(30, 100);
-    
-    public Console(JFrame frame) throws Exception {
-   	
-        textArea = new JTextArea(35, 80);
-        textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
-        textArea.setEditable(false);
-        textArea.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        JScrollPane scrollPane = new JScrollPane(textArea);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        scrollPane.setSize(LOG_FRAME_DIMENSION);
-        frame.add(scrollPane, BorderLayout.EAST);
-        scrollPane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {  
-            public void adjustmentValueChanged(AdjustmentEvent e) {  
-                e.getAdjustable().setValue(e.getAdjustable().getMaximum());  
-            }
-        });
-        redirectOut();
 
-    }
-
-    public PrintStream redirectOut() {
-        OutputStream out = new OutputStream() {
-            @Override
-            public void write(int b) throws IOException {
-                textArea.append(String.valueOf((char) b));
-            }
-        };
-        PrintStream ps = new PrintStream(out);
-        
-        System.setOut(ps);
-        System.setErr(ps);
-
-        return ps;
-    }
+	class Console {
+	
+	    JTextArea textArea;
+	    private static final Dimension LOG_FRAME_DIMENSION = new Dimension(30, 30);
+	    
+	    public Console(JPanel panel) throws Exception {
+	   	
+	        textArea = new JTextArea(10, 20);
+	        textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
+	        textArea.setEditable(false);
+	        textArea.setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
+	        JScrollPane scrollPane = new JScrollPane(textArea);
+	        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+	        scrollPane.setSize(LOG_FRAME_DIMENSION);
+	        panel.add(scrollPane, BorderLayout.CENTER);
+	        scrollPane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {  
+	            public void adjustmentValueChanged(AdjustmentEvent e) {  
+	                e.getAdjustable().setValue(e.getAdjustable().getMaximum());  
+	            }
+	        });
+	        redirectOut();
+	
+	    }
+	
+	    public PrintStream redirectOut() {
+	        OutputStream out = new OutputStream() {
+	            @Override
+	            public void write(int b) throws IOException {
+	                textArea.append(String.valueOf((char) b));
+	            }
+	        };
+	        PrintStream ps = new PrintStream(out);
+	        
+	        System.setOut(ps);
+	        System.setErr(ps);
+	
+	        return ps;
+	    }
 
 }
