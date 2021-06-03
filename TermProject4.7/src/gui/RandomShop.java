@@ -44,6 +44,7 @@ public class RandomShop extends JFrame implements Runnable{
     private static final Dimension OUTER_FRAME_DIMENSION = new Dimension(600, 200);
     private static final Dimension BACK_PANEL_DIMENSION = new Dimension(600, 150);
     private static final Dimension CHAMPION_PANEL_DIMENSION = new Dimension(70, 70);
+    private static final Dimension REFRESH_PANEL_DIMENSION = new Dimension(70, 70);
     
     private final RandomFrame randomFrame1,randomFrame2;
 	static boolean isSelectFinished=false;
@@ -68,7 +69,8 @@ public class RandomShop extends JFrame implements Runnable{
     //Thread
     public void run() {
     	initialize();
-		openShop();
+		randomFrame1.openShop();
+		randomFrame2.openShop();
 		Scanner scn = new Scanner(System.in);
 		while(!isSelectFinished) {
 			if(randomFrame1.numOfChoice==3)randomFrame1.randomFrame.dispose();
@@ -81,17 +83,15 @@ public class RandomShop extends JFrame implements Runnable{
     public void initialize() {
     	isSelectFinished=false;
     	obtainRandom();
-    	
+    	randomFrame1.numOfChoice=0;
+    	randomFrame2.numOfChoice=0;
     	randomFrame1.initialize();
     	randomSix.clear();
     	randomFrame2.initialize();
     	randomSix.clear();
     }
     
-    public void openShop() {
-    	this.randomFrame1.randomFrame.setVisible(true);
-    	this.randomFrame2.randomFrame.setVisible(true);
-    }
+   
     
 	private static void center(final JFrame frame, int i) {
         final Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
@@ -153,7 +153,7 @@ public class RandomShop extends JFrame implements Runnable{
     	
     	RandomFrame(int num,Player player){
     		
-    		this.randomFrame= new JFrame("Random Champions");
+			this.randomFrame= new JFrame("Random Champions");
     		this.randomFrame.setLayout(new BorderLayout());
 			this.backPanel = new BackPanel(num, player, this);
 	        this.randomFrame.add(this.backPanel, BorderLayout.CENTER);
@@ -162,29 +162,99 @@ public class RandomShop extends JFrame implements Runnable{
     	    center(this.randomFrame, num);
     	}
     	public void initialize() {
-    		numOfChoice=0;
     		((BackPanel) this.backPanel).initialize();
     	}
+    	public void openShop() {
+    		randomFrame.setVisible(true);
+    		((BackPanel) backPanel).openChampion();
+    	}
+    	public void closeShop() {
+    		randomFrame.setVisible(false);
+    	}
     }
-    
+    private class RefreshButton extends JButton{
+    	int remain=5;
+    	JLabel refreshLabel;
+    	JLabel remainLabel;
+    	RandomFrame randomframe;
+    	
+    	RefreshButton(RandomFrame randomframe){
+    		//setLayout(new GridBagLayout());
+    		setBackground(Color.decode("#33FF99"));
+    		setPreferredSize(REFRESH_PANEL_DIMENSION);
+    		setBorder(BorderFactory.createMatteBorder(5, 5, 5, 5, Color.decode("#33FF99")));
+    		
+    		refreshLabel= new JLabel("REFRESH: "+remain);
+    		this.add(refreshLabel,BorderLayout.CENTER);
+    		this.randomframe=randomframe;
+    		
+    		addMouseListener(new MouseListener() {
+
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					if (isRightMouseButton(e)) {}
+					else if (isLeftMouseButton(e)) {
+						if(remain>0) {
+							remain--;
+							refreshLabel.setText("REFRESH: "+remain);
+							randomframe.closeShop();
+							obtainRandom();
+							randomframe.initialize();
+							randomframe.openShop();
+							
+						}
+						else {
+							System.out.println("Used all refresh");
+						}
+					}
+					
+				}
+
+				@Override
+				public void mousePressed(MouseEvent e) {
+					// TODO Auto-generated method stub
+					
+				}
+
+				@Override
+				public void mouseReleased(MouseEvent e) {
+					// TODO Auto-generated method stub
+					
+				}
+
+				@Override
+				public void mouseEntered(MouseEvent e) {
+					// TODO Auto-generated method stub
+					
+				}
+
+				@Override
+				public void mouseExited(MouseEvent e) {
+					// TODO Auto-generated method stub
+					
+				}});
+    		
+    	}        
+    }
     
 	private class BackPanel extends JPanel {
 		int num;
+    	private final JButton refreshButton;
 		private ArrayList<gameObject> randomSixEntities;
     	public ArrayList<ChampionPanel> championList= new ArrayList<>();
 		
 		BackPanel(int num, Player player,RandomFrame randomframe){
-    		super(new GridLayout(1,6));
-    		
-
+    		super(new GridLayout(1,7));
+    	    this.refreshButton = new RefreshButton(randomframe);
 			this.num=num;
 			
         	for(int i=0;i<6;i++) {//don't write data in constructor!!
         		championList.add(new ChampionPanel(randomframe, num, board,player));
         		add(championList.get(i));
         	}
+        	add(refreshButton);
             setPreferredSize(BACK_PANEL_DIMENSION);
-            setBorder(BorderFactory.createEmptyBorder(7, 7, 7, 0));
+            setBorder(BorderFactory.createEmptyBorder(7, 7, 7, 7));
             setBackground(Color.decode("#DC7633"));
             validate();
     	}
@@ -198,6 +268,11 @@ public class RandomShop extends JFrame implements Runnable{
     		for(int i=0;i<6;i++) {
     			championList.get(i).setText(randomSixEntities.get(i).getName());
     			championList.get(i).Entity=randomSixEntities.get(i);
+    		}
+    	}
+    	public void openChampion() {
+    		for(ChampionPanel championpanel:championList) {
+    			championpanel.setVisible(true);
     		}
     	}
     }
