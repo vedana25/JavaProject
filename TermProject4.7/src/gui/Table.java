@@ -696,8 +696,12 @@ public final class Table extends JFrame{
 	}
 	
 	public class PlayerPanel extends JPanel{
+		Player player;
+		
 		PlayerPanel(Player player){
 			super(new GridBagLayout());
+			this.player = player;
+
 			setPreferredSize(PLAYER_PANEL_DIMENSION);
 			labeling(player);
 		}
@@ -740,13 +744,54 @@ public final class Table extends JFrame{
             gbc.gridwidth = 4;
             gbc.gridheight = 4;
             add(icon, gbc);
-            gbc.gridx=0;  
-            gbc.gridy=5;
+            gbc.gridx=4;  
+            gbc.gridy=4;
             gbc.gridwidth = 4;
             gbc.gridheight = 2;
             add(name, gbc);
             revalidate();
+            
 		}
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);       
+        	g.setColor(Color.RED);
+        	int damaged=0;
+        	if(this.getPlayer().getHp()<=90 && this.getPlayer().getHp()>80) {
+              	damaged=1;}
+            	else if(this.getPlayer().getHp()<=80 && this.getPlayer().getHp()>70) {
+            	damaged=2;}
+            	else if(this.getPlayer().getHp()<=70 && this.getPlayer().getHp()>60) {
+            	damaged=3;}
+            	else if(this.getPlayer().getHp()<=60 && this.getPlayer().getHp()>50) {
+            	damaged=4;}
+            	else if(this.getPlayer().getHp()<=50 && this.getPlayer().getHp()>40) {
+            	damaged=5;}
+            	else if(this.getPlayer().getHp()<=40 && this.getPlayer().getHp()>30) {
+            	damaged=6;}
+            	else if(this.getPlayer().getHp()<=30 && this.getPlayer().getHp()>20) {
+            	damaged=7;}
+            	else if(this.getPlayer().getHp()<=20 && this.getPlayer().getHp()>10) {
+            	damaged=8;}
+            	else if(this.getPlayer().getHp()<=10 && this.getPlayer().getHp()>0) {
+            	damaged=9;}
+            	else {}
+        	
+        	if(damaged==0) {g.fillRect(0, 35, 250, 35);}
+        	else if(damaged==1) {g.fillRect(0,35,225,35);}
+        	else if(damaged==2) {g.fillRect(0, 35, 200, 35);}
+        	else if(damaged==3) {g.setColor(Color.decode("#CD6155"));g.fillRect(0, 35, 175, 35);}
+        	else if(damaged==4) {g.setColor(Color.decode("#CD6155"));g.fillRect(0, 35, 150, 35);}
+        	else if(damaged==5) {g.setColor(Color.decode("#A93226"));g.fillRect(0, 35, 125, 35);}
+        	else if(damaged==6) {g.setColor(Color.decode("#A93226"));g.fillRect(0, 35, 100, 35);}
+        	else if(damaged==7) {g.setColor(Color.decode("#A93226"));g.fillRect(0, 35, 75, 35);}
+        	else if(damaged==8) {g.setColor(Color.decode("#641E16"));g.fillRect(0, 35, 50, 35);}
+        	else if(damaged==9) {g.setColor(Color.decode("#641E16"));g.fillRect(0, 35, 25, 35);}
+        	}
+          
+        
+        public Player getPlayer() {
+        	return player;
+        }
 	}
     
 }

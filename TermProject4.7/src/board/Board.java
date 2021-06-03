@@ -159,7 +159,7 @@ public class Board {
 		}else {
 			round++;
 			printScore();
-			System.out.println("Continue?");
+			System.out.println("---------------------------------------------------------------------");
 			int willContinue = JOptionPane.showConfirmDialog(null, popupScore(),"Continue?", JOptionPane.INFORMATION_MESSAGE);
 			if(willContinue != 0) System.exit(0);
 			return false;
