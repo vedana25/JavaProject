@@ -91,7 +91,9 @@ public final class Table extends JFrame{
         (
              new Runnable()  {
                   public void run()     {
-                	  getBoardPanel().drawBoard(getGameBoard());		
+                	  getBoardPanel().drawBoard(getGameBoard());	
+                	  getScorePanel().adding();
+
 						          					
       		        }
               }
@@ -621,47 +623,76 @@ public final class Table extends JFrame{
     	return this.StoragePanel;
     }
     
+    public ScorePanel getScorePanel() {
+    	return this.scorePanel;
+    }
+    
     
 	public final class ScorePanel extends JPanel{
+		JPanel center = new JPanel();
+		RoundPanel roundPanel = new RoundPanel();
+		PlayerPanel playerPanel1 = new PlayerPanel(Board.player1); 
+		PlayerPanel playerPanel2 = new PlayerPanel(Board.player2); 
 		
 		ScorePanel(){
 			super(new BorderLayout());
-			final RoundPanel roundPanel = new RoundPanel();
-			final PlayerPanel playerPanel1 = new PlayerPanel(Board.player1); 
-			final PlayerPanel playerPanel2 = new PlayerPanel(Board.player2); 
-	
-			add(roundPanel, BorderLayout.NORTH);
-			JPanel center = new JPanel();
-			add (center, BorderLayout.SOUTH);
+			setPreferredSize(SCORE_PANEL_DIMENSION);
+
+			roundPanel = new RoundPanel();
+			playerPanel1 = new PlayerPanel(Board.player1); 
+			playerPanel2 = new PlayerPanel(Board.player2); 
+
+		}
+		public void adding() {
+			roundPanel.removeAll();
+			playerPanel1.removeAll();
+			playerPanel2.removeAll();
 			
+			this.getRoundPanel().labeling();
+			this.getPlayerPanel(Board.player1).labeling(Board.player1);
+			this.getPlayerPanel(Board.player2).labeling(Board.player2);
+			
+			add(roundPanel, BorderLayout.NORTH);
+			add (center, BorderLayout.SOUTH);			
 			center.setLayout(new GridLayout(1,2));
 			center.add(playerPanel1);
 			center.add(playerPanel2);
-			setPreferredSize(SCORE_PANEL_DIMENSION);
 	        setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 10));
 	        setBackground(Color.decode("#273746"));
+	        
+	        
+	        
 	        validate();
 		}
 		
+		public RoundPanel getRoundPanel() {
+			return roundPanel;
+		}
+		public PlayerPanel getPlayerPanel(Player player) {
+			if(player==Board.player1) return playerPanel1;
+			else return playerPanel2;
+		}
+
 	}
 	
 	public class RoundPanel extends JPanel{
-	
+		JLabel roundLabel = new JLabel();
+		JLabel scoreLabel = new JLabel();
+		
 		RoundPanel(){
 			super(new GridLayout(1,2));
 			setPreferredSize(ROUND_PANEL_DIMENSION);
-			JLabel roundLabel = new JLabel();
-			JLabel scoreLabel = new JLabel();
-			roundLabel.setText("ROUND "+ Board.round);
-			scoreLabel.setText(Board.player1.getNumOfWin()+" : " + Board.player2.getNumOfWin());
 			roundLabel.setFont(new Font("Verdana", Font.BOLD, 20));
 			scoreLabel.setFont(new Font("Verdana", Font.BOLD, 20));
 
-			add(roundLabel);
-			add(scoreLabel);
 			setBorder(BorderFactory.createEmptyBorder(0, 100, 0, 100));
 		}
-
+		public void labeling() {
+			roundLabel.setText("ROUND "+ Board.round);
+			scoreLabel.setText(Board.player1.getNumOfWin()+" : " + Board.player2.getNumOfWin());
+			add(roundLabel);
+			add(scoreLabel);
+		}
 	}
 	
 	public class PlayerPanel extends JPanel{

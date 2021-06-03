@@ -1,15 +1,7 @@
 package board;
 
-import entity.Archer1;
-import entity.Archer2;
-import entity.Archer3;
-import entity.Warrior1;
-import entity.Warrior2;
-import entity.Warrior3;
-
 import entity.gameObject;
 import gui.Table;
-import gui.Table.TilePanel;
 
 import java.util.*;
 
@@ -89,6 +81,9 @@ public class Board {
 	
 	//GUI Version Print ROUND # and Score
 	public String popupScore() {
+		
+		
+		
 		String message;
 		message = "ROUND "+round+
 		"\nSCORE "+player1.getNumOfWin()+" : "+player2.getNumOfWin() +
@@ -99,12 +94,13 @@ public class Board {
 	
 	//move all objects on the board to the storages after end of a round
 	public void clearBoard(Table gameTable) {
-		
+
 		Board.player1.setnumOfobj(0);
 		Board.player2.setnumOfobj(0);
 
 		for(int i=0;i<10;i++) {
 			for(int j=0;j<10;j++) {
+				
 				gameTable.getBoardPanel().getTilePanel(10*i+j).removeAll();
 				gameTable.getBoardPanel().getTilePanel(10*i+j).setTileObject(null);
 				
@@ -129,7 +125,15 @@ public class Board {
 
 			}
 		}
-		
+        SwingUtilities.invokeLater
+        (
+             new Runnable()  {
+                  public void run()     {
+              		gameTable.getScorePanel().adding();
+
+                  }
+              }
+        );
 	}
 	
 	
