@@ -53,9 +53,8 @@ public final class Table extends JFrame{
     private gameObject sourceObject;
 
     public int start;
-    
-    public static int p1movedObj = 0;
-    public static int p2movedObj = 0;
+    public static int p1ObjectOnBoard = 0;
+    public static int p2ObjectOnBoard = 0;
 
     private Color upLightTileColor = Color.decode("#B2BABB");
     private Color upDarkTileColor = Color.decode("#CCD1D1");
@@ -361,7 +360,7 @@ public final class Table extends JFrame{
                     if (isRightMouseButton(event)) {
                     } else if (isLeftMouseButton(event)) {
 
-                    	if(sourceObject!=null) {
+                    	if(sourceObject!=null && getBoardPanel().getTilePanel(tileId).getTileObject()==null) {
         				if(sourceObject.getPlayer()==Board.player1 && tileId <50) { //Player 1
                         	//Assign icon to the tile
                         	tilePanel.setTileObject(sourceObject);	
@@ -375,9 +374,9 @@ public final class Table extends JFrame{
         					        					
         					Board.player1.setnumOfobj(Board.player1.getnumOfobj()+1);
         					sourceObject = null;
-							//If the number of gameOject on board reach the limit, set ready
-        					p1movedObj++;
-        					if(p1movedObj==Board.maxObj||Board.player1.getStorage().isEmpty()==true) {
+        					p1ObjectOnBoard++;
+        					
+        					if((Board.player1.isReadyButton()==true)&&(p1ObjectOnBoard==Board.maxObj||Board.player1.getStorage().isEmpty()==true)) {
         						Board.player1.setReady(true);
         					}
 
@@ -394,19 +393,34 @@ public final class Table extends JFrame{
         					BoardManager.ENTITIES_ONBOARD[row][col].setPlayer(Board.player2);//temporary code
         					BoardManager.ENTITIES_ONBOARD[row][col].setInstorage(false);
         					Board.player2.setnumOfobj(Board.player2.getnumOfobj()+1);
-       						
+       						p2ObjectOnBoard++;
         					sourceObject=null;
-        					p2movedObj++;
-        					if(p2movedObj==Board.maxObj||getGameBoard().player2.getStorage().isEmpty()==true) {
+        					if((Board.player2.isReadyButton()==true)&&(p2ObjectOnBoard==Board.maxObj||Board.player2.getStorage().isEmpty()==true)) {
         						Board.player2.setReady(true);
         					}
         					
         				}
         				else {
 	                		getBoardPanel().getStoragePanel(sourceObject.getPlayer(), sourceObject.getCellNum()).assignChampion(getGameBoard(), sourceObject);
-        					sourceObject=null;
+        					//sourceObject=null;
 	                		System.out.println("You cannot place the champion there. \n You may place your champions on your side only.");
         				}
+                     }else if(sourceObject==null && getBoardPanel().getTilePanel(tileId)!=null) {
+     	                SwingUtilities.invokeLater
+    	                (
+    	                     new Runnable()  {
+    	                          public void run()     {
+    	                        	  getBoardPanel().drawBoard(getGameBoard());			
+              						          					
+    	              		        }
+    	                      }
+    	                );
+                    	 sourceObject = tilePanel.getTileObject();
+                    	 tilePanel.removeAll();
+                    	 getBoardPanel().getTilePanel(tileId).setTileObject(null);
+                    	 if(tilePanel.getTileObject().getPlayer()==getGameBoard().player1) p1ObjectOnBoard--;
+                    	 else if(tilePanel.getTileObject().getPlayer()==getGameBoard().player2) p2ObjectOnBoard--;
+
                      }
                     
 	                SwingUtilities.invokeLater
@@ -678,22 +692,84 @@ public final class Table extends JFrame{
 	public class RoundPanel extends JPanel{
 		JLabel roundLabel = new JLabel();
 		JLabel scoreLabel = new JLabel();
+		JButton button = new JButton();
 		
 		RoundPanel(){
-			super(new GridLayout(1,2));
+			super(new GridLayout(1,3));
 			setPreferredSize(ROUND_PANEL_DIMENSION);
 			roundLabel.setFont(new Font("Verdana", Font.BOLD, 20));
 			scoreLabel.setFont(new Font("Verdana", Font.BOLD, 20));
-
-			setBorder(BorderFactory.createEmptyBorder(0, 100, 0, 100));
+			button = new ReadyButton();
+			setBorder(BorderFactory.createEmptyBorder(10, 50, 10, 40));
 		}
 		public void labeling() {
 			roundLabel.setText("ROUND "+ Board.round);
-			scoreLabel.setText(Board.player1.getNumOfWin()+" : " + Board.player2.getNumOfWin());
+			scoreLabel.setText("      " + Board.player1.getNumOfWin()+" : " + Board.player2.getNumOfWin());
 			add(roundLabel);
 			add(scoreLabel);
+			add(button);
 		}
 	}
+	
+	 private class ReadyButton extends JButton{
+	    	
+	    	JLabel readyLabel;
+	    	private final Dimension READY_BUTTON_DIMENSION = new Dimension(20, 10);
+	    	
+	    	ReadyButton(){
+	    		
+	    		setBackground(Color.decode("#7DCEA0"));
+	    		setPreferredSize(READY_BUTTON_DIMENSION);
+	    		setBorder(BorderFactory.createBevelBorder(DO_NOTHING_ON_CLOSE));
+	    		
+	    		readyLabel= new JLabel("READY", SwingConstants.CENTER);
+	    		readyLabel.setBorder(BorderFactory.createEmptyBorder(0, 45, 0 , 0));
+	    		this.add(readyLabel);
+	    		
+	    		addMouseListener(new MouseListener() {
+
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						if (isRightMouseButton(e)) {}
+						else if (isLeftMouseButton(e)) {
+							Board.player1.setReadyButton(true);
+							Board.player2.setReadyButton(true);
+						}
+						
+    					if((Board.player2.isReadyButton()==true)&&(p2ObjectOnBoard==Board.maxObj||Board.player2.getStorage().isEmpty()==true)) {
+    						Board.player2.setReady(true);
+    					}
+    					if((Board.player1.isReadyButton()==true)&&(p1ObjectOnBoard==Board.maxObj||Board.player1.getStorage().isEmpty()==true)) {
+    						Board.player1.setReady(true);
+    					}
+					}
+
+					@Override
+					public void mousePressed(MouseEvent e) {
+						// TODO Auto-generated method stub
+						
+					}
+
+					@Override
+					public void mouseReleased(MouseEvent e) {
+						// TODO Auto-generated method stub
+						
+					}
+
+					@Override
+					public void mouseEntered(MouseEvent e) {
+						// TODO Auto-generated method stub
+						
+					}
+
+					@Override
+					public void mouseExited(MouseEvent e) {
+						// TODO Auto-generated method stub
+						
+					}});
+	    		
+	    	}        
+	    }
 	
 	public class PlayerPanel extends JPanel{
 		Player player;

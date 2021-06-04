@@ -95,9 +95,16 @@ public class Board {
 	//move all objects on the board to the storages after end of a round
 	public void clearBoard(Table gameTable) {
 
-		Board.player1.setnumOfobj(0);
-		Board.player2.setnumOfobj(0);
+		player1.setnumOfobj(0);
+		player2.setnumOfobj(0);
+		player1.setReadyButton(false);
+		player2.setReadyButton(false);
+		player1.setReady(false);
+		player2.setReady(false);
+		gameTable.p1ObjectOnBoard=0;
+		gameTable.p2ObjectOnBoard=0;
 
+		
 		for(int i=0;i<10;i++) {
 			for(int j=0;j<10;j++) {
 				
@@ -192,11 +199,6 @@ public class Board {
 		}
 		
 		this.clearBoard(gameTable);
-		Table.p1movedObj=0;
-		Table.p2movedObj=0;
-
-		player1.setReady(false);
-		player2.setReady(false);
 
 	}
 	
